@@ -132,7 +132,7 @@ elif st.session_state.etapa == "App":
             st.download_button("💾 Salvar dados (.json)", data=json.dumps({k:st.session_state.get(k) for k in CHAVES_SALVAR}, ensure_ascii=False, indent=2, default=str), file_name=f"perfil_comportamental_{st.session_state.usuario}.json", mime="application/json", key="dl_perfil_1")
 
     with _tab_disc:
-        st.header("🎯 Meu Perfil DISC", key="dl_perfil_2")
+        st.header("🎯 Meu Perfil DISC")
         prompt_disc = st.text_area("Descreva sua situação ou dúvida:", height=120, key="prompt_disc", placeholder="Digite aqui...")
         if st.button("🤖 GERAR COM IA", key="btn_disc", use_container_width=True):
             if prompt_disc.strip():
