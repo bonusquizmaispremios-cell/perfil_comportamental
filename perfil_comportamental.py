@@ -64,12 +64,24 @@ _cache = get_cache_perfil_comp()
 CHAVES_SALVAR = ["usuario","historico_perfil_comportamental"]
 
 def gerar_json():
-    return json.dumps({k: st.session_state.get(k) for k in CHAVES_SALVAR}, ensure_ascii=False, indent=2, default=str)
+    return json.dumps({k: st.session_state.get(k) for k in list(st.session_state.keys()) if not k.startswith("_") and k not in ("api_key",)}, ensure_ascii=False, indent=2, default=str)
 
 def carregar_json_sessao(dados):
-    for k,v in dados.items():
-        if k in CHAVES_SALVAR:
-            st.session_state[k] = v
+    _bloq = {'api_key','etapa','nome_login','chave_login','upload_login','btn_entrar_login'}
+    _pref = (
+        'btn_','sel_','ul_','dl_','cad_','_sub','_sm','_tab','_bsc',
+        'ativo_','rem_','sel_pet_','ev_','prof_','hig_','prev_',
+        'vac_','sint_','comp_','trad_','subs_','amb_','viag_','chat_',
+        'duvida_','emerg_','peso_','data_','obs_','tipo_','vet_','desc_',
+        'local_','prox_','alim','sit_emerg_','tc_','oraf','siau','agmag',
+        'lv','mv','pt','pi','sh','wc','rv','rp','rc',
+    )
+    import re as _re
+    for k, v in dados.items():
+        if k in _bloq: continue
+        if any(k.startswith(p) for p in _pref): continue
+        if _re.match(r'.+_\d+$', k): continue
+        st.session_state[k] = v
 
 def salvar_perfil_cache(usuario):
     _cache["perfis"][usuario] = {k: st.session_state.get(k) for k in CHAVES_SALVAR}
@@ -150,7 +162,7 @@ elif st.session_state.etapa == "App":
         st.markdown("<hr class='divider'>", unsafe_allow_html=True)
         col_sv, _ = st.columns([1,3])
         with col_sv:
-            st.download_button("💾 Salvar dados (.json)", data=json.dumps({k:st.session_state.get(k) for k in CHAVES_SALVAR}, ensure_ascii=False, indent=2, default=str), file_name=f"perfil_comportamental_{st.session_state.usuario}.json", mime="application/json", key="dl_perfil_1")
+            st.download_button("💾 Salvar dados (.json)", data=json.dumps({k: st.session_state.get(k) for k in list(st.session_state.keys()) if not k.startswith("_") and k not in ("api_key",)}, ensure_ascii=False, indent=2, default=str), file_name=f"perfil_comportamental_{st.session_state.usuario}.json", mime="application/json", key="dl_perfil_1")
 
     with _tab_disc:
         st.header("🎯 Meu Perfil DISC")
@@ -163,6 +175,7 @@ elif st.session_state.etapa == "App":
                         msgs = [{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":prompt_disc}]
                         resp = client.chat.completions.create(messages=msgs, model="openai/gpt-oss-120b", max_tokens=2048)
                         resultado_disc = resp.choices[0].message.content
+                        if resultado_disc: st.session_state['res_disc_perfil1'] = str(resultado_disc)
                         st.session_state["res_disc"] = resultado_disc
                         historico.append({"data":datetime.now().strftime("%d/%m %H:%M"),"aba":"Meu Perfil DISC","resumo":prompt_disc[:60],"conteudo":resultado_disc})
                         st.session_state.historico_perfil_comportamental = historico
@@ -185,6 +198,7 @@ elif st.session_state.etapa == "App":
                         msgs = [{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":prompt_ennea}]
                         resp = client.chat.completions.create(messages=msgs, model="openai/gpt-oss-120b", max_tokens=2048)
                         resultado_ennea = resp.choices[0].message.content
+                        if resultado_ennea: st.session_state['res_ennea_perfil2'] = str(resultado_ennea)
                         st.session_state["res_ennea"] = resultado_ennea
                         historico.append({"data":datetime.now().strftime("%d/%m %H:%M"),"aba":"Enneagrama","resumo":prompt_ennea[:60],"conteudo":resultado_ennea})
                         st.session_state.historico_perfil_comportamental = historico
@@ -207,6 +221,7 @@ elif st.session_state.etapa == "App":
                         msgs = [{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":prompt_mbti}]
                         resp = client.chat.completions.create(messages=msgs, model="openai/gpt-oss-120b", max_tokens=2048)
                         resultado_mbti = resp.choices[0].message.content
+                        if resultado_mbti: st.session_state['res_mbti_perfil3'] = str(resultado_mbti)
                         st.session_state["res_mbti"] = resultado_mbti
                         historico.append({"data":datetime.now().strftime("%d/%m %H:%M"),"aba":"Myers-Briggs","resumo":prompt_mbti[:60],"conteudo":resultado_mbti})
                         st.session_state.historico_perfil_comportamental = historico
@@ -229,6 +244,7 @@ elif st.session_state.etapa == "App":
                         msgs = [{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":prompt_carreiras}]
                         resp = client.chat.completions.create(messages=msgs, model="openai/gpt-oss-120b", max_tokens=2048)
                         resultado_carreiras = resp.choices[0].message.content
+                        if resultado_carreiras: st.session_state['res_carreiras_perfil4'] = str(resultado_carreiras)
                         st.session_state["res_carreiras"] = resultado_carreiras
                         historico.append({"data":datetime.now().strftime("%d/%m %H:%M"),"aba":"Carreiras Ideais","resumo":prompt_carreiras[:60],"conteudo":resultado_carreiras})
                         st.session_state.historico_perfil_comportamental = historico
@@ -251,6 +267,7 @@ elif st.session_state.etapa == "App":
                         msgs = [{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":prompt_comunicar}]
                         resp = client.chat.completions.create(messages=msgs, model="openai/gpt-oss-120b", max_tokens=2048)
                         resultado_comunicar = resp.choices[0].message.content
+                        if resultado_comunicar: st.session_state['res_comunicar_perfil5'] = str(resultado_comunicar)
                         st.session_state["res_comunicar"] = resultado_comunicar
                         historico.append({"data":datetime.now().strftime("%d/%m %H:%M"),"aba":"Como Me Comunicar","resumo":prompt_comunicar[:60],"conteudo":resultado_comunicar})
                         st.session_state.historico_perfil_comportamental = historico
@@ -273,6 +290,7 @@ elif st.session_state.etapa == "App":
                         msgs = [{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":prompt_relatorio}]
                         resp = client.chat.completions.create(messages=msgs, model="openai/gpt-oss-120b", max_tokens=2048)
                         resultado_relatorio = resp.choices[0].message.content
+                        if resultado_relatorio: st.session_state['res_relatorio_perfil6'] = str(resultado_relatorio)
                         st.session_state["res_relatorio"] = resultado_relatorio
                         historico.append({"data":datetime.now().strftime("%d/%m %H:%M"),"aba":"Relatório Completo","resumo":prompt_relatorio[:60],"conteudo":resultado_relatorio})
                         st.session_state.historico_perfil_comportamental = historico
@@ -295,6 +313,7 @@ elif st.session_state.etapa == "App":
                         msgs = [{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":prompt_pontos}]
                         resp = client.chat.completions.create(messages=msgs, model="openai/gpt-oss-120b", max_tokens=2048)
                         resultado_pontos = resp.choices[0].message.content
+                        if resultado_pontos: st.session_state['res_pontos_perfil7'] = str(resultado_pontos)
                         st.session_state["res_pontos"] = resultado_pontos
                         historico.append({"data":datetime.now().strftime("%d/%m %H:%M"),"aba":"Pontos Fortes","resumo":prompt_pontos[:60],"conteudo":resultado_pontos})
                         st.session_state.historico_perfil_comportamental = historico
@@ -317,6 +336,7 @@ elif st.session_state.etapa == "App":
                         msgs = [{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":prompt_pontos_cegos}]
                         resp = client.chat.completions.create(messages=msgs, model="openai/gpt-oss-120b", max_tokens=2048)
                         resultado_pontos_cegos = resp.choices[0].message.content
+                        if resultado_pontos_cegos: st.session_state['res_pontos_cegos_perfil8'] = str(resultado_pontos_cegos)
                         st.session_state["res_pontos_cegos"] = resultado_pontos_cegos
                         historico.append({"data":datetime.now().strftime("%d/%m %H:%M"),"aba":"Pontos Cegos","resumo":prompt_pontos_cegos[:60],"conteudo":resultado_pontos_cegos})
                         st.session_state.historico_perfil_comportamental = historico
@@ -339,6 +359,7 @@ elif st.session_state.etapa == "App":
                         msgs = [{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":prompt_diario_pc}]
                         resp = client.chat.completions.create(messages=msgs, model="openai/gpt-oss-120b", max_tokens=2048)
                         resultado_diario_pc = resp.choices[0].message.content
+                        if resultado_diario_pc: st.session_state['res_diario_pc_perfil9'] = str(resultado_diario_pc)
                         st.session_state["res_diario_pc"] = resultado_diario_pc
                         historico.append({"data":datetime.now().strftime("%d/%m %H:%M"),"aba":"Diário","resumo":prompt_diario_pc[:60],"conteudo":resultado_diario_pc})
                         st.session_state.historico_perfil_comportamental = historico
@@ -361,6 +382,7 @@ elif st.session_state.etapa == "App":
                         msgs = [{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":prompt_biblioteca_pc}]
                         resp = client.chat.completions.create(messages=msgs, model="openai/gpt-oss-120b", max_tokens=2048)
                         resultado_biblioteca_pc = resp.choices[0].message.content
+                        if resultado_biblioteca_pc: st.session_state['res_biblioteca_p_perfil10'] = str(resultado_biblioteca_pc)
                         st.session_state["res_biblioteca_pc"] = resultado_biblioteca_pc
                         historico.append({"data":datetime.now().strftime("%d/%m %H:%M"),"aba":"Biblioteca","resumo":prompt_biblioteca_pc[:60],"conteudo":resultado_biblioteca_pc})
                         st.session_state.historico_perfil_comportamental = historico
